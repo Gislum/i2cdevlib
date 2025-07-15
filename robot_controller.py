@@ -150,6 +150,37 @@ def robot_stop():
     left_motor_stop()
     print("Robot Stop")
 
+# --- Pattern Functions ---
+def robot_spin(duty_cycle, duration):
+    """Spins the robot to the right for a given duration."""
+    print(f"Pattern: Spin right for {duration}s at {duty_cycle}% speed")
+    robot_turn_right(duty_cycle)
+    time.sleep(duration)
+    robot_stop()
+    print("Pattern: Spin complete")
+
+def robot_square(duty_cycle, side_duration):
+    """Drives the robot in a square pattern."""
+    # A 90-degree turn duration is hardware-dependent. This is a guess.
+    turn_duration = 0.5
+    print(f"Pattern: Drive square with side duration {side_duration}s at {duty_cycle}% speed")
+    for i in range(4):
+        print(f"  Square side {i+1}")
+        # Drive forward for one side
+        robot_forward(duty_cycle)
+        time.sleep(side_duration)
+        # Stop
+        robot_stop()
+        time.sleep(0.2)
+        # Turn right
+        robot_turn_right(duty_cycle)
+        time.sleep(turn_duration)
+        # Stop
+        robot_stop()
+        time.sleep(0.2)
+    print("Pattern: Square complete")
+
+
 def cleanup_gpio():
     """Stops PWM and cleans up GPIO channels."""
     print("\nCleaning up GPIO...")
@@ -176,25 +207,50 @@ def index():
     """Serves the main control page."""
     return render_template('index.html')
 
+@app.route('/move/<direction>/<int:speed>')
 @app.route('/move/<direction>')
-def move(direction):
-    """Handles movement commands from the web interface."""
-    duty_cycle = DEFAULT_DUTY_CYCLE # Use the default speed for now
+def move(direction, speed=None):
+    """
+    Handles movement commands from the web interface.
+    Accepts an optional speed parameter (0-100).
+    """
+    if speed is None:
+        speed = DEFAULT_DUTY_CYCLE
+
+    # Validate speed to be within 0-100 range
+    if not 0 <= speed <= 100:
+        return {'status': 'error', 'message': 'Invalid speed. Must be between 0 and 100.'}, 400
 
     if direction == 'forward':
-        robot_forward(duty_cycle)
+        robot_forward(speed)
     elif direction == 'backward':
-        robot_backward(duty_cycle)
+        robot_backward(speed)
     elif direction == 'left':
-        robot_turn_left(duty_cycle)
+        robot_turn_left(speed)
     elif direction == 'right':
-        robot_turn_right(duty_cycle)
+        robot_turn_right(speed)
     elif direction == 'stop':
         robot_stop()
     else:
         return {'status': 'error', 'message': 'Invalid direction'}, 400
 
-    return {'status': 'ok', 'action': direction}
+    return {'status': 'ok', 'action': direction, 'speed': speed}
+
+@app.route('/pattern/<pattern_name>')
+def pattern(pattern_name):
+    """Handles pattern commands from the web interface."""
+    duty_cycle = DEFAULT_DUTY_CYCLE
+
+    if pattern_name == 'spin':
+        # Default spin for 2 seconds
+        robot_spin(duty_cycle, 2)
+    elif pattern_name == 'square':
+        # Default square with 1-second sides
+        robot_square(duty_cycle, 1)
+    else:
+        return {'status': 'error', 'message': 'Invalid pattern name'}, 400
+
+    return {'status': 'ok', 'action': pattern_name}
 
 
 if __name__ == '__main__':
