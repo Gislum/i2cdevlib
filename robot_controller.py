@@ -104,28 +104,42 @@ def left_motor_stop():
 # --- Robot Movement Functions ---
 def robot_forward(duty_cycle):
     """Moves the robot forward."""
+    # Goal: Right FORWARD, Left FORWARD
+    # Confirmed via diagnostics:
+    # - right_motor_forward() -> Right physical FORWARD
+    # - left_motor_backward() -> Left physical FORWARD
     right_motor_forward(duty_cycle)
-    left_motor_forward(duty_cycle)
+    left_motor_backward(duty_cycle)
     print(f"Robot Forward at {duty_cycle}% duty cycle")
 
 def robot_backward(duty_cycle):
     """Moves the robot backward."""
+    # Goal: Right BACKWARD, Left BACKWARD
+    # Confirmed via diagnostics:
+    # - right_motor_backward() -> Right physical BACKWARD
+    # - left_motor_forward() -> Left physical BACKWARD
     right_motor_backward(duty_cycle)
-    left_motor_backward(duty_cycle)
+    left_motor_forward(duty_cycle)
     print(f"Robot Backward at {duty_cycle}% duty cycle")
 
 def robot_turn_left(duty_cycle):
     """Pivots the robot to the left."""
-    # Right motor forward, Left motor backward
+    # Goal: Right FORWARD, Left BACKWARD
+    # Confirmed via diagnostics:
+    # - right_motor_forward() -> Right physical FORWARD
+    # - left_motor_forward() -> Left physical BACKWARD
     right_motor_forward(duty_cycle)
-    left_motor_backward(duty_cycle)
+    left_motor_forward(duty_cycle)
     print(f"Robot Turning Left at {duty_cycle}% duty cycle")
 
 def robot_turn_right(duty_cycle):
     """Pivots the robot to the right."""
-    # Right motor backward, Left motor forward
+    # Goal: Right BACKWARD, Left FORWARD
+    # Confirmed via diagnostics:
+    # - right_motor_backward() -> Right physical BACKWARD
+    # - left_motor_backward() -> Left physical FORWARD
     right_motor_backward(duty_cycle)
-    left_motor_forward(duty_cycle)
+    left_motor_backward(duty_cycle)
     print(f"Robot Turning Right at {duty_cycle}% duty cycle")
 
 def robot_stop():
