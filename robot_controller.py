@@ -1,5 +1,7 @@
 import RPi.GPIO as GPIO
 import time
+import atexit
+from flask import Flask, render_template
 
 # GPIO Pin Configuration
 # Using BCM numbering scheme for GPIO pins
@@ -158,67 +160,46 @@ def cleanup_gpio():
     GPIO.cleanup()
     print("GPIO cleanup complete.")
 
+# --- Flask App Setup ---
+app = Flask(__name__)
+
+# Register the cleanup function to be called on exit
+atexit.register(cleanup_gpio)
+
+# Setup GPIO pins before starting the app
+setup_gpio()
+
+# --- Flask Routes ---
+
+@app.route('/')
+def index():
+    """Serves the main control page."""
+    return render_template('index.html')
+
+@app.route('/move/<direction>')
+def move(direction):
+    """Handles movement commands from the web interface."""
+    duty_cycle = DEFAULT_DUTY_CYCLE # Use the default speed for now
+
+    if direction == 'forward':
+        robot_forward(duty_cycle)
+    elif direction == 'backward':
+        robot_backward(duty_cycle)
+    elif direction == 'left':
+        robot_turn_left(duty_cycle)
+    elif direction == 'right':
+        robot_turn_right(duty_cycle)
+    elif direction == 'stop':
+        robot_stop()
+    else:
+        return {'status': 'error', 'message': 'Invalid direction'}, 400
+
+    return {'status': 'ok', 'action': direction}
+
+
 if __name__ == '__main__':
-    try:
-        setup_gpio() # Call the setup function
-        print("Robot Controller Script Initialized and GPIO setup.")
-        print("Pin Definitions:")
-        print(f"  Right Motor: ENA={ENA_PIN}, IN1={IN1_PIN}, IN2={IN2_PIN}")
-        print(f"  Left Motor: ENB={ENB_PIN}, IN3={IN3_PIN}, IN4={IN4_PIN}")
-
-        print("\n--- Interactive Command Line Test Interface ---")
-        print("Commands: f (forward), b (backward), l (turn_left), r (turn_right), s (stop)")
-        print("Optionally, add a duty cycle (0-100) after the command, e.g., 'f 75'")
-        print("Type 'q' or 'exit' to quit.")
-
-        # Comment out or remove the automated test sequence if using interactive mode primarily
-        # print("\n--- Skipping Automated Test Sequence for Interactive Mode ---")
-        # --- Test Sequence for Individual Motor Functions (Optional: Comment out to skip) ---
-        # print("\n--- Testing Individual Motors ---")
-        # ... (automated tests from previous version can be kept here if desired for quick checks)
-        # print("--- Individual Motor Tests Complete ---")
-        # --- Test Sequence for Robot Movement Functions ---
-        # print("\n--- Testing Robot Movements ---")
-        # ... (automated tests from previous version can be kept here if desired for quick checks)
-        # print("--- Robot Movement Tests Complete ---")
-
-        while True:
-            command_input = input("Enter command: ").strip().lower()
-
-            if command_input in ['q', 'exit']:
-                print("Exiting interactive mode.")
-                break
-
-            parts = command_input.split()
-            action = parts[0]
-
-            duty_cycle = DEFAULT_DUTY_CYCLE # Use default if not specified
-            if len(parts) > 1:
-                try:
-                    speed_param = int(parts[1])
-                    if 0 <= speed_param <= 100:
-                        duty_cycle = speed_param
-                    else:
-                        print("Invalid duty cycle. Must be 0-100. Using default.")
-                except ValueError:
-                    print("Invalid speed parameter. Using default duty cycle.")
-
-            if action == 'f':
-                robot_forward(duty_cycle)
-            elif action == 'b':
-                robot_backward(duty_cycle)
-            elif action == 'l':
-                robot_turn_left(duty_cycle)
-            elif action == 'r':
-                robot_turn_right(duty_cycle)
-            elif action == 's':
-                robot_stop()
-            else:
-                print(f"Unknown command: {action}")
-
-            time.sleep(0.1) # Small delay to prevent rapid re-prompting if used in a tight loop by mistake
-
-    except KeyboardInterrupt:
-        print("\nProgram exited by user (Ctrl+C)")
-    finally:
-        cleanup_gpio() # Call the cleanup function
+    # Setting host to '0.0.0.0' makes the server publicly available
+    # on your network, so you can access it from your phone.
+    print("Starting Flask web server...")
+    print("Access the control interface at http://<YOUR_PI_IP_ADDRESS>:5000")
+    app.run(host='0.0.0.0', port=5000)
