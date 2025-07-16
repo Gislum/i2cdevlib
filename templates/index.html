@@ -24,27 +24,82 @@
                 <button id="btn-backward" class="control-button">Backward</button>
             </div>
         </div>
+
+        <div class="speed-control-container">
+            <label for="speed-slider">Speed: <span id="speed-value">75</span>%</label>
+            <input type="range" min="0" max="100" value="75" class="slider" id="speed-slider">
+        </div>
+
+        <div class="pattern-controls">
+            <h2>Patterns</h2>
+            <button id="btn-spin" class="control-button pattern">Spin</button>
+            <button id="btn-square" class="control-button pattern">Drive Square</button>
+        </div>
     </div>
 
     <!-- JavaScript will be added here later -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const buttons = {
+            // Element mapping
+            const moveButtons = {
                 'forward': document.getElementById('btn-forward'),
                 'backward': document.getElementById('btn-backward'),
                 'left': document.getElementById('btn-left'),
                 'right': document.getElementById('btn-right'),
                 'stop': document.getElementById('btn-stop')
             };
+            const patternButtons = {
+                'spin': document.getElementById('btn-spin'),
+                'square': document.getElementById('btn-square')
+            };
             const statusMessage = document.getElementById('status-message');
+            const speedSlider = document.getElementById('speed-slider');
+            const speedValue = document.getElementById('speed-value');
 
-            const sendCommand = (direction) => {
-                statusMessage.textContent = `Sending: ${direction}...`;
-                fetch(`/move/${direction}`)
+            // --- Event Listeners ---
+
+            // Update speed display when slider changes
+            speedSlider.addEventListener('input', () => {
+                speedValue.textContent = speedSlider.value;
+            });
+
+            // Add listeners for movement buttons
+            for (const [direction, button] of Object.entries(moveButtons)) {
+                if (button) {
+                    button.addEventListener('click', (event) => {
+                        event.preventDefault();
+                        const speed = speedSlider.value;
+                        sendMoveCommand(direction, speed);
+                    });
+                }
+            }
+
+            // Add listeners for pattern buttons
+            for (const [pattern, button] of Object.entries(patternButtons)) {
+                if (button) {
+                    button.addEventListener('click', (event) => {
+                        event.preventDefault();
+                        sendPatternCommand(pattern);
+                    });
+                }
+            }
+
+            // --- Fetch Functions ---
+
+            // Function to send movement commands
+            const sendMoveCommand = (direction, speed) => {
+                // The 'stop' command doesn't need a speed, but sending it doesn't hurt
+                const url = `/move/${direction}/${speed}`;
+                statusMessage.textContent = `Sending: ${direction} at ${speed}% speed...`;
+                fetch(url)
                     .then(response => response.json())
                     .then(data => {
                         console.log(data);
-                        statusMessage.textContent = `Status: ${data.action} command received.`;
+                        if (data.status === 'ok') {
+                            statusMessage.textContent = `Status: ${data.action} command received.`;
+                        } else {
+                            statusMessage.textContent = `Error: ${data.message}`;
+                        }
                     })
                     .catch(error => {
                         console.error('Error:', error);
@@ -52,14 +107,32 @@
                     });
             };
 
-            for (const [direction, button] of Object.entries(buttons)) {
-                if (button) {
-                    button.addEventListener('click', function(event) {
-                        event.preventDefault(); // Prevent form submission or page reload
-                        sendCommand(direction);
+            // Function to send pattern commands
+            const sendPatternCommand = (pattern) => {
+                const url = `/pattern/${pattern}`;
+                statusMessage.textContent = `Executing pattern: ${pattern}...`;
+                // Disable buttons during pattern execution to prevent conflicts
+                Object.values(moveButtons).concat(Object.values(patternButtons)).forEach(b => b.disabled = true);
+
+                fetch(url)
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log(data);
+                        if (data.status === 'ok') {
+                            statusMessage.textContent = `Pattern '${data.action}' complete.`;
+                        } else {
+                            statusMessage.textContent = `Error: ${data.message}`;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        statusMessage.textContent = 'Error: Could not connect to server.';
+                    })
+                    .finally(() => {
+                        // Re-enable buttons after pattern is complete or on error
+                        Object.values(moveButtons).concat(Object.values(patternButtons)).forEach(b => b.disabled = false);
                     });
-                }
-            }
+            };
         });
     </script>
 </body>

@@ -83,3 +83,61 @@ h1 {
     grid-column: 2;
     grid-row: 3;
 }
+
+.speed-control-container {
+    margin-top: 30px;
+    padding: 10px;
+    background-color: #222;
+    border-radius: 10px;
+}
+
+.slider {
+    -webkit-appearance: none;
+    width: 90%;
+    height: 15px;
+    border-radius: 5px;
+    background: #555;
+    outline: none;
+    opacity: 0.7;
+    transition: opacity .2s;
+    margin-top: 10px;
+}
+
+.slider:hover {
+    opacity: 1;
+}
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    background: #4CAF50;
+    cursor: pointer;
+}
+
+.slider::-moz-range-thumb {
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    background: #4CAF50;
+    cursor: pointer;
+}
+
+.pattern-controls {
+    margin-top: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+}
+
+.pattern-controls h2 {
+    margin-bottom: 5px;
+}
+
+.pattern {
+    width: 80%;
+    max-width: 250px;
+}
