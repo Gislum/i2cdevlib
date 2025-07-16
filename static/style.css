@@ -27,13 +27,13 @@ h1 {
     height: 20px; /* Reserve space to prevent layout shifts */
 }
 
-#controls {
+#main-controls {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     grid-template-rows: repeat(3, 1fr);
     gap: 15px;
     max-width: 300px;
-    margin: auto;
+    margin: 30px auto; /* Give it some vertical margin */
 }
 
 .control-button {
@@ -52,34 +52,33 @@ h1 {
     background-color: #555;
 }
 
-/* Grid placement for buttons */
-#btn-forward {
+/* New Grid placement for cross-pad layout */
+.mc-forward {
     grid-column: 2;
     grid-row: 1;
 }
 
-#btn-left {
+.mc-left {
     grid-column: 1;
     grid-row: 2;
 }
 
-#btn-stop {
+.mc-stop {
     grid-column: 2;
     grid-row: 2;
     background-color: #800; /* Red color for stop */
     border-color: #a00;
 }
-#btn-stop:active {
+.mc-stop:active {
     background-color: #a00;
 }
 
-
-#btn-right {
+.mc-right {
     grid-column: 3;
     grid-row: 2;
 }
 
-#btn-backward {
+.mc-backward {
     grid-column: 2;
     grid-row: 3;
 }

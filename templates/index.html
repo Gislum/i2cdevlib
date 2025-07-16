@@ -11,18 +11,12 @@
     <div class="container">
         <h1>Robot Control</h1>
         <div id="status-message">Status: Idle</div>
-        <div id="controls">
-            <div class="button-row">
-                <button id="btn-forward" class="control-button">Forward</button>
-            </div>
-            <div class="button-row">
-                <button id="btn-left" class="control-button">Turn Left</button>
-                <button id="btn-stop" class="control-button stop">Stop</button>
-                <button id="btn-right" class="control-button">Turn Right</button>
-            </div>
-            <div class="button-row">
-                <button id="btn-backward" class="control-button">Backward</button>
-            </div>
+        <div id="main-controls">
+            <button id="btn-forward" class="control-button mc-forward">Forward</button>
+            <button id="btn-left" class="control-button mc-left">Turn Left</button>
+            <button id="btn-stop" class="control-button stop mc-stop">Stop</button>
+            <button id="btn-right" class="control-button mc-right">Turn Right</button>
+            <button id="btn-backward" class="control-button mc-backward">Backward</button>
         </div>
 
         <div class="speed-control-container">
